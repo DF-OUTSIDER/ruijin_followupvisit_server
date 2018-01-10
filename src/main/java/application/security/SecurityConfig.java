@@ -1,8 +1,9 @@
 package application.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,12 +13,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private FollowUpVisitAuthenticationProvider authenticationProvider;
-
     @Override
     public void configure(WebSecurity web) throws Exception {
         super.configure(web);
@@ -32,17 +31,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable().exceptionHandling()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/login/", "/logout").permitAll() //允许登录登出不需要权限
-                .anyRequest().authenticated();
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationProvider);
+                .anyRequest().authenticated().accessDecisionManager(accessDecisionManager());
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    protected CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -50,5 +43,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    protected AccessDecisionManager accessDecisionManager() {
+        List<AccessDecisionVoter<? extends Object>> voters = Arrays.asList(new FollowUpVisitAccessVoter());
+        return new AffirmativeBased(voters);
     }
 }

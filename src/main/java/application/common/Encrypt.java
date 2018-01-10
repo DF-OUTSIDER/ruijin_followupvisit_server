@@ -18,11 +18,14 @@ public class Encrypt {
     private static byte[] key;
     private static SecretKeySpec secretKey;
 
-    public static String getMd5String(String text) throws Exception {
-        if (!StringUtils.hasText(text))
-            throw new Exception("No text");
-
-        return DigestUtils.md5DigestAsHex(text.getBytes("UTF-8"));
+    public static String getMd5String(String text) {
+        try {
+            if (!StringUtils.hasText(text))
+                throw new Exception("No text");
+            return DigestUtils.md5DigestAsHex(text.getBytes("UTF-8"));
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     private static void setKey(String myKey) {
