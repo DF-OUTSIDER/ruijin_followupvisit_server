@@ -1,5 +1,8 @@
 package application.controller;
 
+import application.common.ActionResult;
+import application.common.ClientError;
+import application.common.ClientOk;
 import application.domain.UserDto;
 import application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +17,11 @@ public class LoginController {
     private UserService userService;
 
     @RequestMapping("/")
-    public boolean checkUserValid(@RequestBody UserDto user) {
+    public ActionResult checkUserValid(@RequestBody UserDto user) {
         try {
-            return userService.checkUserValid(user.getUsername(), user.getPassword());
+            return new ClientOk(userService.checkUserValid(user.getUsername(), user.getPassword()), null);
         } catch (Exception e) {
-            return false;
+            return new ClientError(false, e.getMessage());
         }
     }
 }

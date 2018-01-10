@@ -1,16 +1,19 @@
 package application.common;
 
+/**
+ * 发生错误时的返回对象
+ */
 public class ClientError implements ActionResult{
-    private Boolean result;
+    private Boolean success;
     private String message;
 
     public ClientError(Boolean result, String message) {
-        this.result = result;
+        this.success = result;
         this.message = message;
     }
 
-    public Boolean getResult() {
-        return result;
+    public Boolean getSuccess() {
+        return success;
     }
 
     public String getMessage() {
