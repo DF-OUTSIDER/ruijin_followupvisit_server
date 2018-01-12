@@ -1,13 +1,18 @@
 package application.common;
 
 /**
- * 正常返回数据
+ * return correct result
  */
 public class ClientOk implements ActionResult {
     private Boolean success;
     private Object data;
 
-    public ClientOk(boolean result, Object data) {
+    public ClientOk(Boolean success, Object data) {
+        this.success = success;
+        this.data = data;
+    }
+
+    public ClientOk(boolean result, Object... data) {
         this.success = result;
         this.data = data;
     }

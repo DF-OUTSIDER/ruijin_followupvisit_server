@@ -1,5 +1,6 @@
 package application.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
@@ -17,6 +18,9 @@ import java.util.List;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Autowired
+    FollowUpVisitAccessVoter followUpVisitAccessVoter;
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         super.configure(web);
@@ -47,7 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     protected AccessDecisionManager accessDecisionManager() {
-        List<AccessDecisionVoter<? extends Object>> voters = Arrays.asList(new FollowUpVisitAccessVoter());
+        List<AccessDecisionVoter<? extends Object>> voters = Arrays.asList(followUpVisitAccessVoter);
         return new AffirmativeBased(voters);
     }
 }

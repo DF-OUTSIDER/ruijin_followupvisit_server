@@ -1,50 +1,46 @@
 package application.security;
 
-import application.common.Encrypt;
-import application.domain.AuthorityToken;
-import application.entity.RoleEntity;
+import application.domain.ResearchDto;
+import application.domain.RoleDto;
 import application.entity.UserResearchEntity;
-import application.entity.UserResearchRoleEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FollowUpAuthority implements GrantedAuthority {
-    private UserResearchEntity userResearchEntity;
-    private Set<RoleEntity> roleEntities;
+    @JsonIgnore
+    private ResearchDto research;
+    @JsonIgnore
+    private Set<RoleDto> roles;
 
     public FollowUpAuthority(UserResearchEntity userResearchEntity) {
-        this.userResearchEntity = userResearchEntity;
-        this.roleEntities = userResearchEntity.getUserResearchRolesByUserResearchId()
+        this.research = new ResearchDto(userResearchEntity.getResearchByResearchId());
+        roles = new HashSet<>();
+        userResearchEntity.getUserResearchRolesByUserResearchId()
                 .stream()
-                .map(UserResearchRoleEntity::getRoleByRoleId)
+                .map(userResearchRoleEntity -> roles.add(new RoleDto(userResearchRoleEntity.getRoleId(),
+                        userResearchRoleEntity.getRoleByRoleId().getRoleName())))
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * get a json string from research's roles of current user
+     *
+     * @return map:{researchId:roleList}
+     */
     @Override
     public String getAuthority() {
         try {
-            List<String> roleNameList = roleEntities.stream().map(RoleEntity::getRoleName).collect(Collectors.toList());
-            AuthorityToken authorityToken = new AuthorityToken(userResearchEntity.getUserId(), userResearchEntity.getResearchId(), roleNameList);
+            List<String> roleNameList = roles.stream().map(role -> role.getRoleName()).collect(Collectors.toList());
+            Map<String, List<String>> researchRoles = new HashMap();
+            researchRoles.put(research.getResearchId(), roleNameList);
             ObjectMapper objectMapper = new ObjectMapper();
-            return Encrypt.encryptAES(objectMapper.writeValueAsString(authorityToken)); //encrypt all info
+            return objectMapper.writeValueAsString(researchRoles);
         } catch (Exception e) {
             return null;
         }
-    }
-
-    public AuthorityToken getAuthorityToken(String encryptedStr) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String oriStr = Encrypt.decryptAES(encryptedStr);
-        try {
-            return objectMapper.readValue(oriStr, AuthorityToken.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

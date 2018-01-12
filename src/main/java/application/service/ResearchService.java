@@ -12,4 +12,6 @@ public interface ResearchService {
      * @return
      */
     List<ResearchDto> getUserResearchList(String userId);
+
+    String getDefaultResearch(String userId);
 }
